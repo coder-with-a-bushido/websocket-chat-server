@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -12,7 +13,8 @@ func main() {
 	go room.handleRoom()
 	mux.HandleFunc("/ws", room.serveWs)
 
-	err := http.ListenAndServe(":"+"8001", mux)
+	port := os.Getenv("PORT")
+	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
