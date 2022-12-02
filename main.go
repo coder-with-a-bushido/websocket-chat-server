@@ -13,7 +13,10 @@ func main() {
 	go room.handleRoom()
 	mux.HandleFunc("/ws", room.serveWs)
 
-	port := os.Getenv("PORT")
+	port, portFound := os.LookupEnv("PORT")
+	if !portFound {
+		port = "8001"
+	}
 	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

@@ -8,42 +8,41 @@ import (
 )
 
 type Room struct {
-	allPeers   map[*Peer]bool
-	register   chan *Peer
-	unregister chan *Peer
-	// msg from peer to be sent to room
-	broadcast chan *Message
+	allPeers    map[*Peer]bool
+	peerActions *PeerActions
 }
 
 func newRoom() *Room {
 	return &Room{
-		allPeers:   make(map[*Peer]bool),
-		register:   make(chan *Peer),
-		unregister: make(chan *Peer),
-		broadcast:  make(chan *Message),
+		allPeers: make(map[*Peer]bool),
+		peerActions: &PeerActions{
+			joinRoom:     make(chan *Peer),
+			leaveRoom:    make(chan *Peer),
+			broadcastMsg: make(chan *Message),
+		},
 	}
 }
 
 func (room *Room) handleRoom() {
 	for {
 		select {
-		case peer := <-room.register:
+		case peer := <-room.peerActions.joinRoom:
 			room.allPeers[peer] = true
-		case peer := <-room.unregister:
+		case peer := <-room.peerActions.leaveRoom:
 			if _, ok := room.allPeers[peer]; ok {
-				close(peer.sendMsg)
+				close(peer.msgToPeer)
 				delete(room.allPeers, peer)
 			}
-		case msg := <-room.broadcast:
+		case msg := <-room.peerActions.broadcastMsg:
 			for peer := range room.allPeers {
 				if peer == msg.peer {
 					continue
 				}
 				select {
-				case peer.sendMsg <- msg.value:
+				case peer.msgToPeer <- msg.value:
 				// this case is when there's no receiver for chan `peer.sendMsg`
 				default:
-					close(peer.sendMsg)
+					close(peer.msgToPeer)
 					delete(room.allPeers, peer)
 				}
 			}
@@ -62,11 +61,11 @@ func (room *Room) serveWs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	peer := &Peer{
-		room:    room,
-		conn:    conn,
-		sendMsg: make(chan []byte, 256),
+		conn:        conn,
+		msgToPeer:   make(chan []byte, 256),
+		peerActions: room.peerActions,
 	}
-	room.register <- peer
+	room.peerActions.joinRoom <- peer
 
 	go peer.handleFromPeer()
 	go peer.handleToPeer()

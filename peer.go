@@ -7,15 +7,16 @@ import (
 )
 
 type Peer struct {
-	room *Room
 	conn *websocket.Conn
 	// msg from room to be sent to the peer
-	sendMsg chan []byte
+	msgToPeer chan []byte
+	// peer actions
+	peerActions *PeerActions
 }
 
 func (peer *Peer) handleFromPeer() {
 	defer func() {
-		peer.room.unregister <- peer
+		peer.peerActions.leaveRoom <- peer
 		peer.conn.Close()
 	}()
 
@@ -29,7 +30,7 @@ func (peer *Peer) handleFromPeer() {
 			peer:  peer,
 			value: msgVal,
 		}
-		peer.room.broadcast <- newMsg
+		peer.peerActions.broadcastMsg <- newMsg
 	}
 }
 
@@ -38,7 +39,7 @@ func (peer *Peer) handleToPeer() {
 		peer.conn.Close()
 	}()
 
-	for msg := range peer.sendMsg {
+	for msg := range peer.msgToPeer {
 		err := peer.conn.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			break
