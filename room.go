@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -12,14 +13,10 @@ type Room struct {
 	peerActions *PeerActions
 }
 
-func newRoom() *Room {
+func createNewRoom() *Room {
 	return &Room{
-		allPeers: make(map[*Peer]bool),
-		peerActions: &PeerActions{
-			joinRoom:     make(chan *Peer),
-			leaveRoom:    make(chan *Peer),
-			broadcastMsg: make(chan *Message),
-		},
+		allPeers:    make(map[*Peer]bool),
+		peerActions: createPeerActionsForRoom(),
 	}
 }
 
@@ -33,14 +30,21 @@ func (room *Room) handleRoom() {
 				close(peer.msgToPeer)
 				delete(room.allPeers, peer)
 			}
-		case msg := <-room.peerActions.broadcastMsg:
+		case roomEvent := <-room.peerActions.broadcastRoomEvent:
+			msg, err := json.Marshal(roomEvent.Data)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("broadcasting msg to all peers:")
+			log.Println(msg)
+
 			for peer := range room.allPeers {
-				if peer == msg.peer {
+				if peer == roomEvent.peer {
 					continue
 				}
 				select {
-				case peer.msgToPeer <- msg.value:
-				// this case is when there's no receiver for chan `peer.sendMsg`
+				case peer.msgToPeer <- msg:
+				// this case is when there's no receiver for chan `peer.msgToPeer`
 				default:
 					close(peer.msgToPeer)
 					delete(room.allPeers, peer)
@@ -60,13 +64,5 @@ func (room *Room) serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	peer := &Peer{
-		conn:        conn,
-		msgToPeer:   make(chan []byte, 256),
-		peerActions: room.peerActions,
-	}
-	room.peerActions.joinRoom <- peer
-
-	go peer.handleFromPeer()
-	go peer.handleToPeer()
+	createNewPeer(conn, room)
 }

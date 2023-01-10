@@ -8,27 +8,25 @@ const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
 
-console.log({username, room})
+// const socket = io();
 
-const socket = io();
+// // Join chatroom
+// socket.emit('joinRoom', { username, room });
 
-// Join chatroom
-socket.emit('joinRoom', { username, room });
+// // Get room and users
+// socket.on('roomUsers', ({ room, users }) => {
+//   outputRoomName(room);
+//   outputUsers(users);
+// });
 
-// Get room and users
-socket.on('roomUsers', ({ room, users }) => {
-  outputRoomName(room);
-  outputUsers(users);
-});
+// // Message from server
+// socket.on('message', (message) => {
+//   console.log(message);
+//   outputMessage(message);
 
-// Message from server
-socket.on('message', (message) => {
-  console.log(message);
-  outputMessage(message);
-
-  // Scroll down
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-});
+//   // Scroll down
+//   chatMessages.scrollTop = chatMessages.scrollHeight;
+// });
 
 // Message submit
 chatForm.addEventListener('submit', (e) => {
@@ -43,8 +41,8 @@ chatForm.addEventListener('submit', (e) => {
     return false;
   }
 
-  // Emit message to server
-  socket.emit('chatMessage', msg);
+  // // Emit message to server
+  // socket.emit('chatMessage', msg);
 
   // Clear input
   e.target.elements.msg.value = '';

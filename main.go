@@ -9,12 +9,12 @@ import (
 func main() {
 	mux := http.NewServeMux()
 
-	room := newRoom()
+	room := createNewRoom()
 	go room.handleRoom()
 	mux.HandleFunc("/ws", room.serveWs)
 
 	client := http.FileServer(http.Dir("./client"))
-	mux.Handle("/",client)
+	mux.Handle("/", client)
 
 	port, portFound := os.LookupEnv("PORT")
 	if !portFound {
