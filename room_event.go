@@ -6,6 +6,6 @@ type BaseRoomEvent struct {
 }
 
 type MessageRoomEventData struct {
-	PeerName string
-	Value    []byte
+	PeerName string `json:"name"`
+	Value    string `json:"value"`
 }

@@ -24,8 +24,10 @@ func (room *Room) handleRoom() {
 	for {
 		select {
 		case peer := <-room.peerActions.joinRoom:
+			log.Println("Peer joined ", peer)
 			room.allPeers[peer] = true
 		case peer := <-room.peerActions.leaveRoom:
+			log.Println("Peer left ", peer)
 			if _, ok := room.allPeers[peer]; ok {
 				close(peer.msgToPeer)
 				delete(room.allPeers, peer)
@@ -35,8 +37,7 @@ func (room *Room) handleRoom() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Println("broadcasting msg to all peers:")
-			log.Println(msg)
+			log.Println("broadcasting msg from peer", roomEvent.peer, ":", msg)
 
 			for peer := range room.allPeers {
 				if peer == roomEvent.peer {
@@ -64,5 +65,6 @@ func (room *Room) serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("New peer connecting...")
 	createNewPeer(conn, room)
 }

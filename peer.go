@@ -42,11 +42,13 @@ func (peer *Peer) handleFromPeer() {
 			break
 		}
 
+		log.Println("Message from Peer", peer, ":", string(msgVal))
+
 		var raw json.RawMessage
-		baseEvent := &BasePeerEvent{
-			Data: raw,
+		baseEvent := BasePeerEvent{
+			Data: &raw,
 		}
-		err = json.Unmarshal(msgVal, baseEvent)
+		err = json.Unmarshal(msgVal, &baseEvent)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -65,7 +67,7 @@ func (peer *Peer) handleFromPeer() {
 		case PEERLEAVE:
 			peer.onLeave(actualEventData.(*LeavePeerEventData))
 		default:
-			log.Println(*baseEvent)
+			log.Println(baseEvent)
 		}
 	}
 }

@@ -9,16 +9,16 @@ const (
 )
 
 type BasePeerEvent struct {
-	Kind PeerEventKind
-	Data any
+	Kind PeerEventKind `json:"kind"`
+	Data any           `json:"data"`
 }
 
 type JoinPeerEventData struct {
-	Username string
+	Username string `json:"username"`
 }
 
 type MessagePeerEventData struct {
-	Content []byte
+	Content string `json:"content"`
 }
 
 type LeavePeerEventData struct{}

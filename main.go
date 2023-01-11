@@ -20,7 +20,7 @@ func main() {
 	if !portFound {
 		port = "8001"
 	}
-	log.Println("Starting server...")
+	log.Println("Starting server on port ", port)
 	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
