@@ -3,21 +3,12 @@ const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
 
-// Get username and room from URL
-const { username, room } = Qs.parse(location.search, {
+// Get username from URL
+const { username } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
 
 let socket = new WebSocket("ws://" + window.location.host + "/ws")
-
-// // Message from server
-// socket.on('message', (message) => {
-//   console.log(message);
-//   outputMessage(message);
-
-//   // Scroll down
-//   chatMessages.scrollTop = chatMessages.scrollHeight;
-// });
 
 socket.onopen = (event) => {
   sendJoinEvent();
