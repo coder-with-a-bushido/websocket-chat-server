@@ -18,7 +18,7 @@ func main() {
 
 	port, portFound := os.LookupEnv("PORT")
 	if !portFound {
-		port = "8001"
+		port = "8080"
 	}
 	log.Println("Starting server on port ", port)
 	err := http.ListenAndServe(":"+port, mux)

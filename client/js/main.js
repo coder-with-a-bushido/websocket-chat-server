@@ -8,7 +8,7 @@ const { username } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
 
-let socket = new WebSocket("ws://" + window.location.host + "/ws")
+let socket = new WebSocket(window.location.host == "localhost" ? "ws" : "wss" + "://" + window.location.host + "/ws")
 
 socket.onopen = (event) => {
   sendJoinEvent();
